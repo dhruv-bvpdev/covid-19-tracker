@@ -8,11 +8,23 @@ import {
 } from "@mui/material";
 import InfoBox from "./components/InfoBox";
 import Map from "./components/Map";
+import Table from "./components/Table";
 import "./App.css";
+import { sortData } from "./components/util";
 
 const App = () => {
   const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState("worldwide");
+  const [countryInfo, setCountryInfo] = useState({});
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    fetch("https://corona.lmao.ninja/v3/covid-19/all")
+      .then((response) => response.json())
+      .then((data) => {
+        setCountryInfo(data);
+      });
+  }, []);
 
   useEffect(() => {
     const getCountriesData = async () => {
@@ -23,6 +35,8 @@ const App = () => {
             name: country.country,
             value: country.countryInfo.iso2,
           }));
+          const sortedData = sortData(data);
+          setTableData(sortedData);
           setCountries(countries);
         });
     };
@@ -30,16 +44,25 @@ const App = () => {
     getCountriesData();
   }, []);
 
-  const onCountryChange = (event) => {
+  const onCountryChange = async (event) => {
     const countryCode = event.target.value;
-    setCountry(countryCode);
+
+    const url =
+      countryCode === "worldwide"
+        ? "https://corona.lmao.ninja/v3/covid-19/all"
+        : `https://corona.lmao.ninja/v3/covid-19/countries/${countryCode}`;
+
+    await fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setCountry(countryCode);
+        setCountryInfo(data);
+      });
   };
 
   return (
     <div className="app">
       <div className="app__left">
-        {/* Header */}
-        {/* Title + Select Input Drop field */}
         <div className="app__header">
           <h1>COVID-19 TRACKER</h1>
           <FormControl className="app__dropdown">
@@ -56,18 +79,31 @@ const App = () => {
           </FormControl>
         </div>
         <div className="app__stats">
-          <InfoBox title="Coronavirus Cases" cases={1234} total={2000} />
-          <InfoBox title="Recovered" cases={1234} total={2000} />
-          <InfoBox title="Deaths" cases={1234} total={2000} />
+          <InfoBox
+            title="Coronavirus Cases"
+            cases={countryInfo.todayCases}
+            total={countryInfo.cases}
+          />
+          <InfoBox
+            title="Recovered"
+            cases={countryInfo.todayRecovered}
+            total={countryInfo.recovered}
+          />
+          <InfoBox
+            title="Deaths"
+            cases={countryInfo.todayDeaths}
+            total={countryInfo.deaths}
+          />
         </div>
 
         {/* Map */}
         <Map />
       </div>
+
       <Card className="app__right">
         <CardContent>
-          {/* Table */}
           <h3>Live Cases By Country</h3>
+          <Table countries={tableData} />
           {/* Graph */}
           <h3>World Wide New Cases</h3>
         </CardContent>
