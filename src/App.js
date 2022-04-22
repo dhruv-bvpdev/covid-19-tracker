@@ -9,8 +9,9 @@ import {
 import InfoBox from "./components/InfoBox";
 import Map from "./components/Map";
 import Table from "./components/Table";
-import "./App.css";
 import { sortData } from "./components/util";
+import LineGraph from "./components/LineGraph";
+import "./App.css";
 
 const App = () => {
   const [countries, setCountries] = useState([]);
@@ -106,6 +107,7 @@ const App = () => {
           <Table countries={tableData} />
           {/* Graph */}
           <h3>World Wide New Cases</h3>
+          <LineGraph />
         </CardContent>
       </Card>
     </div>
